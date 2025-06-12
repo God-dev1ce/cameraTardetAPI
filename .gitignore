@@ -9,7 +9,8 @@ venv/
 __pycache__/
 *.pyc
 *.pyo
-
+# 忽略 pytest 缓存文件
+.pytest_cache/
 # 忽略日志文件
 *.log
 
@@ -27,8 +28,6 @@ Thumbs.db
 # 忽略 IDE 临时文件
 *.sublime-workspace
 *.sublime-project
-*.idea/
-*.vscode/
 
 # 忽略临时文件
 *.tmp
@@ -36,6 +35,7 @@ Thumbs.db
 *.temp
 *.temp.*
 *.bak
+
 # 忽略打包文件
 dist/
 build/
