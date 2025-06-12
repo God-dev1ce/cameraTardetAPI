@@ -1,0 +1,5 @@
+mysql
+地址：115.190.42.141:3306
+用户名：tardet_user
+密码：tardet123
+库名：tardet_db
