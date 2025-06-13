@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api import auth, nodes, users, devices
+from api import auth, nodes, users, devices,model
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -26,3 +26,4 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(devices.router)
 app.include_router(nodes.router)
+app.include_router(model.router)
