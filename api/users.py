@@ -73,7 +73,7 @@ def get_user(usercode: str, db: Session = Depends(get_db), checkToken=Depends(de
         return error_response(code=401, msg="令牌验证失败")
     user = db.query(User).filter(User.usercode == usercode).first()
     if not user:
-        return error_response(code=404, msg="用户不存在")
+        return error_response(code=400, msg="用户不存在")
     user_out = {
         "usercode": user.usercode,
         "username": user.username,
@@ -120,7 +120,7 @@ def delete_user(usercode: str, db: Session = Depends(get_db),current_userInfo = 
         return error_response(code=400, msg="无权限删除用户")
     user = db.query(User).filter(User.usercode == usercode).first()
     if not user:
-        return error_response(code=400, msg="用户不存在")
+        return error_response(code=404, msg="用户不存在")
 
     db.delete(user)
     db.commit()

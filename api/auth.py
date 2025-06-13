@@ -24,7 +24,7 @@ def get_db():
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.usercode == request.usercode).first()
     if not user or not verify_password(request.password, user.password):
-        return error_response(code=401, msg="用户名或密码错误")
+        return error_response(code=400, msg="用户名或密码错误")
     # 生成 access_token 和 refresh_token
     access_token = create_access_token(
         data={"sub": str(user.id), "role": user.role},
@@ -56,7 +56,7 @@ def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
         # 查询用户是否存在
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
-            return error_response(code=401, msg="用户不存在")
+            return error_response(code=404, msg="用户不存在")
 
         # 生成新的 access_token
         new_access_token = create_access_token(
