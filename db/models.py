@@ -67,20 +67,16 @@ class Model_Rule(Base):
 class Device_Model_Map(Base):
     __tablename__ = "device_model_map"
 
+    id = Column(String(36), primary_key=True, index=True)   #ID(关联model_rule_map表的device_mode_id)
     device_id = Column(String(36), nullable=False)   #设备ID
     model_id = Column(String(36),  nullable=False) # 绑定的模型ID
-    __table_args__ = (
-        PrimaryKeyConstraint('device_id', 'model_id'),  # 定义复合主键
-    )
 # 模型与识别规则绑定表
-class Model_Rule_Map(Base):
-    __tablename__ = "model_rule_map"
+class Device_Model_Rule_Map(Base):
+    __tablename__ = "device_model_rule_map"
 
-    model_id = Column(String(36),  nullable=False) #模型ID
-    rule_id = Column(String(255),  nullable=False)    #绑定的规则ID列表
-    __table_args__ = (
-        PrimaryKeyConstraint('model_id','rule_id'),  # 定义复合主键
-    )
+    id = Column(String(36), primary_key=True, index=True)   #ID
+    device_model_id = Column(String(36),  nullable=False) #设备绑定模型表ID
+    rule_id = Column(String(36),  nullable=False)    #绑定的规则ID列表
 
 
 #报警表模型

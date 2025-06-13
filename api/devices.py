@@ -2,8 +2,9 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from db.database import SessionLocal
-from db.models import Device, Node
+from db.models import Device, Node,Model,Device_Model_Map
 from schemas.device import DeviceCreate, DeviceUpdate
+from schemas.device_model_map import DeviceModelMap
 from typing import List, Optional
 from core.security import get_password_hash, decodeToken2user
 from utils.response import success_response, error_response
@@ -164,4 +165,48 @@ def update_device(
     db.commit()
     db.refresh(device)
     return success_response(msg="设备信息更新成功")
+
+#绑定模型
+@router.post("/api/bindModelToDevice")
+def bind_model_to_device(
+    map_in : DeviceModelMap,
+    db: Session = Depends(get_db),
+    current_userInfo = Depends(decodeToken2user) 
+):
+    if current_userInfo == False:
+        return error_response(code=401, msg="令牌验证失败")
+
+    current_userID, current_userRole = current_userInfo
+    if current_userRole!= "admin":
+        return error_response(code=400, msg="无权限")
+
+    device = db.query(Device).filter(Device.id == map_in.device_id).first()
+    if not device:
+        return error_response(code=404, msg="设备不存在")
+    new_map = None
+    models=map_in.model_id.split(",")
+    for model_id in models:
+        model = db.query(Model).filter(Model.id == model_id).first()
+        if not model:
+            return error_response(code=404, msg=f"模型 {model_id} 不存在")
+        
+        existing_map = db.query(Device_Model_Map).filter(
+            Device_Model_Map.device_id == map_in.device_id,
+            Device_Model_Map.model_id == model_id
+        ).first()
+        #如果已经绑定过，就跳过
+        if existing_map:
+            continue
+        
+        new_map = Device_Model_Map(
+            id=uuid.uuid4(),
+            device_id=map_in.device_id,
+            model_id=model_id
+        )
+        db.add(new_map)
+    if not new_map:
+        return error_response(code=400, msg="没有新的模型绑定")
+    db.commit()
+    db.refresh(new_map)
+    return success_response(msg="模型绑定成功")
 
