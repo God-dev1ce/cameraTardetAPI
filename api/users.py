@@ -96,7 +96,7 @@ def update_user(user_in: UserUpdate, db: Session = Depends(get_db),current_userI
     if user_in.username:
         user.username = user_in.username
     if user_in.password:
-        user.password = user_in.password
+        user.password = get_password_hash(user_in.password)
     if user_in.role:
         user.role = user_in.role
 
