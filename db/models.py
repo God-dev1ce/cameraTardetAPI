@@ -70,11 +70,9 @@ class Model(Base):
 
     id = Column(String(36), primary_key=True, index=True)   #模型ID
     name = Column(String(20), nullable=False)   #模型名称
-    rules_id = Column(String(255), nullable=False)  #识别规则ID列表
-    alert_interval_seconds = Column(Integer, default=600)    #报警间隔时间（秒）
     created_time = Column(DateTime, default=datetime.utcnow)    #创建时间
     
-# 关联模型规则表（权重）
+# 模型规则表（权重）
 class Model_Rule(Base):
     __tablename__ = "model_rules"
 
@@ -83,4 +81,13 @@ class Model_Rule(Base):
     path = Column(String(255),  nullable=False) #规则文件路径
     nodes = Column(String(100),  nullable=False)    #适用节点列表
     created_time = Column(DateTime, default=datetime.utcnow)    #创建时间
+    
+# 关联模型规则表（权重）
+class Device_Model_Map(Base):
+    __tablename__ = "device_model_map"
+
+    id = Column(String(36), primary_key=True, index=True)   #ID
+    device_id = Column(String(36), nullable=False)   #设备ID
+    model_id = Column(String(36),  nullable=False) #模型ID
+    rules_id = Column(String(255),  nullable=False)    #绑定的规则ID列表
 
