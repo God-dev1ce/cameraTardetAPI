@@ -164,3 +164,4 @@ def update_device(
     db.commit()
     db.refresh(device)
     return success_response(msg="设备信息更新成功")
+

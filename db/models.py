@@ -1,12 +1,8 @@
 # SQLAlchemy模型定义
-from sqlalchemy import Boolean, Column, Integer, String, Enum, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, PrimaryKeyConstraint, String, Enum, DateTime, ForeignKey
 from db.database import Base
-import enum
 from datetime import datetime
 
-class RoleEnum(str, enum.Enum):
-    admin = "admin"
-    user = "user"
 #用户表模型
 class User(Base):
     __tablename__ = "users"
@@ -15,7 +11,7 @@ class User(Base):
     usercode = Column(String(50),  nullable=False)  #用户编码
     username = Column(String(50),  nullable=False)  #用户名
     password = Column(String(100), nullable=False)  #密码
-    role = Column(Enum(RoleEnum), nullable=False)   #用户角色
+    role = Column(Enum("admin", "user"), nullable=False)   #用户角色
     creator_id = Column(String(36), nullable=True)  #创建者ID
     created_time = Column(DateTime, default=datetime.utcnow)    #创建时间
     
@@ -47,22 +43,6 @@ class Node(Base):
     node_mx = Column(String(1), nullable=False) #是否明细
     created_time = Column(DateTime, default=datetime.utcnow)    #创建时间
 
-#报警表模型
-class Alert(Base):
-    __tablename__ = "alerts"
-
-    id = Column(String(36), primary_key=True, index=True)   #报警ID
-    device_id = Column(String(36),  nullable=False) #设备ID
-    model_id = Column(String(36),  nullable=False)  #模型ID
-    rule_id = Column(String(36),  nullable=False)   #识别规则ID
-    image_url = Column(String(255), nullable=True)  #报警图片URL
-    alert_msg = Column(String(255), nullable=True)  #报警信息
-    alert_time = Column(DateTime, default=datetime.utcnow)    #报警时间
-    alert_level = Column(Enum("A", "B", "C", "D"), nullable=True)   #报警级别
-    alert_result = Column(Enum("误报", "确认报警"), nullable=True)  #报警结果
-    status = Column(Enum("未确认", "已确认"), default="unhandled")  #处理状态
-    handled_user = Column(String(36),  nullable=True)   #处理用户ID
-    handled_time = Column(DateTime, nullable=True)   #处理时间
 
 #模型表模型
 class Model(Base):
@@ -82,12 +62,39 @@ class Model_Rule(Base):
     nodes = Column(String(100),  nullable=False)    #适用节点列表
     created_time = Column(DateTime, default=datetime.utcnow)    #创建时间
     
-# 关联模型规则表（权重）
+# 设备与模型绑定表
 class Device_Model_Map(Base):
     __tablename__ = "device_model_map"
 
-    id = Column(String(36), primary_key=True, index=True)   #ID
     device_id = Column(String(36), nullable=False)   #设备ID
-    model_id = Column(String(36),  nullable=False) #模型ID
-    rules_id = Column(String(255),  nullable=False)    #绑定的规则ID列表
+    model_id = Column(String(36),  nullable=False) # 绑定的模型ID
+    __table_args__ = (
+        PrimaryKeyConstraint('device_id', 'model_id'),  # 定义复合主键
+    )
+# 模型与识别规则绑定表
+class Model_Rule_Map(Base):
+    __tablename__ = "model_rule_map"
 
+    model_id = Column(String(36),  nullable=False) #模型ID
+    rule_id = Column(String(255),  nullable=False)    #绑定的规则ID列表
+    __table_args__ = (
+        PrimaryKeyConstraint('model_id','rule_id'),  # 定义复合主键
+    )
+
+
+#报警表模型
+class Alert(Base):
+    __tablename__ = "alerts"
+
+    id = Column(String(36), primary_key=True, index=True)   #报警ID
+    device_id = Column(String(36),  nullable=False) #设备ID
+    model_id = Column(String(36),  nullable=False)  #模型ID
+    rule_id = Column(String(36),  nullable=False)   #识别规则ID
+    image_url = Column(String(255), nullable=True)  #报警图片URL
+    alert_msg = Column(String(255), nullable=True)  #报警信息
+    alert_time = Column(DateTime, default=datetime.utcnow)    #报警时间
+    alert_level = Column(Enum("A", "B", "C", "D"), nullable=True)   #报警级别
+    alert_result = Column(Enum("误报", "确认报警"), nullable=True)  #报警结果
+    status = Column(Enum("未确认", "已确认"), default="unhandled")  #处理状态
+    handled_user = Column(String(36),  nullable=True)   #处理用户ID
+    handled_time = Column(DateTime, nullable=True)   #处理时间
