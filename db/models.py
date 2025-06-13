@@ -13,7 +13,7 @@ class User(Base):
     password = Column(String(100), nullable=False)  #密码
     role = Column(Enum("admin", "user"), nullable=False)   #用户角色
     creator_id = Column(String(36), nullable=True)  #创建者ID
-    created_time = Column(DateTime, default=datetime.utcnow)    #创建时间
+    created_time = Column(DateTime, default=datetime.now())    #创建时间
     
 #设备表模型
 class Device(Base):
@@ -41,7 +41,7 @@ class Node(Base):
     node_js = Column(String(3), nullable=False) #节点级数
     node_fjm = Column(String(30), nullable=False)   #分级码
     node_mx = Column(String(1), nullable=False) #是否明细
-    created_time = Column(DateTime, default=datetime.utcnow)    #创建时间
+    created_time = Column(DateTime, default=datetime.now())    #创建时间
 
 
 #模型表模型
@@ -50,7 +50,7 @@ class Model(Base):
 
     id = Column(String(36), primary_key=True, index=True)   #模型ID
     name = Column(String(20), nullable=False)   #模型名称
-    created_time = Column(DateTime, default=datetime.utcnow)    #创建时间
+    created_time = Column(DateTime, default=datetime.now())    #创建时间
     
 # 模型规则表（权重）
 class Model_Rule(Base):
@@ -58,9 +58,10 @@ class Model_Rule(Base):
 
     id = Column(String(36), primary_key=True, index=True)   #模型规则ID
     name = Column(String(20), nullable=False)   #规则名称
+    model_id= Column(String(36),  nullable=False) #模型ID
     path = Column(String(255),  nullable=False) #规则文件路径
-    nodes = Column(String(100),  nullable=False)    #适用节点列表
-    created_time = Column(DateTime, default=datetime.utcnow)    #创建时间
+    notes = Column(String(100),  nullable=False)    #适用节点列表
+    created_time = Column(DateTime, default=datetime.now())    #创建时间
     
 # 设备与模型绑定表
 class Device_Model_Map(Base):
@@ -92,7 +93,7 @@ class Alert(Base):
     rule_id = Column(String(36),  nullable=False)   #识别规则ID
     image_url = Column(String(255), nullable=True)  #报警图片URL
     alert_msg = Column(String(255), nullable=True)  #报警信息
-    alert_time = Column(DateTime, default=datetime.utcnow)    #报警时间
+    alert_time = Column(DateTime, default=datetime.now())    #报警时间
     alert_level = Column(Enum("A", "B", "C", "D"), nullable=True)   #报警级别
     alert_result = Column(Enum("误报", "确认报警"), nullable=True)  #报警结果
     status = Column(Enum("未确认", "已确认"), default="unhandled")  #处理状态
