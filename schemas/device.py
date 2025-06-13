@@ -3,15 +3,20 @@ from typing import Optional
 from datetime import datetime
 
 class DeviceBase(BaseModel):
-    name: str
-    code: str
+    id: Optional[str] = None
+    name: Optional[str] = None
+    code: Optional[str] = None
     ip_address: Optional[str] = None
-    node_id: Optional[int] = None
-
+    port: Optional[str] = None
+    director: Optional[str] = None
+    node_id: Optional[str] = None
+    connected_time: Optional[datetime] = None
+    disconnected_time: Optional[datetime] = None
+    is_online: Optional[int] = 0
+    sync_time: Optional[datetime] = None
+    
 class DeviceCreate(DeviceBase):
     pass
 
-class DeviceUpdate(BaseModel):
-    name: Optional[str] = None
-    ip_address: Optional[str] = None
-    node_id: Optional[int] = None
+class DeviceUpdate(DeviceBase):
+    pass
