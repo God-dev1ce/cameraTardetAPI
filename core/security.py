@@ -8,7 +8,33 @@ from sqlalchemy.orm import Session
 from db.models import User
 from utils.response import success_response, error_response
 from utils.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES,REFRESH_TOKEN_EXPIRE_DAYS
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+import base64
+import os
 
+# AES加密密钥（开发阶段暂使用硬编码KEY）
+AES_KEY = os.getenv('AES_KEY', 'cvvU2/u+x7q32CbSBVjFLdgkutBFoD90M2cr2+hIzlQ=').encode()[:32]  # 确保32字节
+AES_IV = os.getenv('AES_IV', 'nFWYBd+O8o3I+M8M9/lr7g==').encode()[:16]  # 确保16字节
+
+# 部署到服务器后修改为从base64编码的环境变量读取
+# key生成 \utils\createAESkey.py   生成后保存到服务器环境变量
+# AES_KEY = base64.b64decode(os.getenv('AES_KEY'))  
+# AES_IV = base64.b64decode(os.getenv('AES_IV'))    
+
+def aes_encrypt(plaintext: str) -> str:
+    """AES加密（可反向解密）"""
+    cipher = AES.new(AES_KEY, AES.MODE_CBC, AES_IV)
+    padded_data = pad(plaintext.encode(), AES.block_size)
+    encrypted = cipher.encrypt(padded_data)
+    return base64.b64encode(encrypted).decode()
+
+def aes_decrypt(ciphertext: str) -> str:
+    """AES解密"""
+    cipher = AES.new(AES_KEY, AES.MODE_CBC, AES_IV)
+    encrypted = base64.b64decode(ciphertext)
+    decrypted = cipher.decrypt(encrypted)
+    return unpad(decrypted, AES.block_size).decode()
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
