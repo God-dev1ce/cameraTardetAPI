@@ -1,5 +1,5 @@
 # SQLAlchemy模型定义
-from sqlalchemy import Boolean, Column, Integer, PrimaryKeyConstraint, String, Enum, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, String, Enum, DateTime
 from db.database import Base
 from datetime import datetime
 
@@ -25,12 +25,24 @@ class Device(Base):
     director = Column(String(30), nullable=True)   #设备负责人信息
     ip_address = Column(String(45), nullable=True)  #设备IP地址
     port = Column(String(10),  nullable=True)   #设备端口
+    admin_account=Column(String(10),  nullable=True) #该设备后台管理员账户名
+    admin_pwd=Column(String(255),  nullable=True) #该设备后台管理员密码
+    company_id=Column(String(36), nullable=False) #设备所属厂商ID
     node_id = Column(String(36),  nullable=True)    #设备所在节点ID
     connected_time = Column(DateTime, nullable=True)    #设备连接时间
     disconnected_time = Column(DateTime, nullable=True)  #设备断开时间
     sync_time = Column(DateTime, nullable=True)  #设备同步时间
     is_online = Column(Boolean, default=False)   #设备在线状态
-    
+
+#设备所属厂商表
+class Device_Company(Base):
+    __tablename__ = "device_company"
+
+    id = Column(String(36), primary_key=True, index=True)  #厂商ID
+    name = Column(String(50), nullable=False)  #厂商名称
+    stream_type = Column(Enum("rtsp"), nullable=False)   #视频流类
+    stream_path = Column(String(100),  nullable=True)    #视频流后缀地址
+
 #节点表模型
 class Node(Base):
     __tablename__ = "nodes"

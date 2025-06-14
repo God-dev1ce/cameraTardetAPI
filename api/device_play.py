@@ -7,7 +7,8 @@ from fastapi import APIRouter, WebSocket
 from starlette.websockets import WebSocketDisconnect
 from sqlalchemy.orm import Session
 from db.database import SessionLocal
-from db.models import Device
+from db.models import Device,Device_Company
+from core.security import  aes_decrypt
 from fastapi import Depends
 
 router = APIRouter()
@@ -34,10 +35,16 @@ async def rtsp_stream(
             await websocket.send_text("404|设备不存在")
             await websocket.close()
             return
+        device_company= db.query(Device_Company).filter(Device_Company.id == device.company_id).first()
+        if not device_company:
+            await websocket.send_text("404|设备厂商不存在")
+            await websocket.close()
+            return
 
         complete_ip = f"{device.ip_address}:{device.port}"
-        adminInfo = f"{device.admin_account}:{device.admin_pwd}"
-
+        adminInfo = f"{device.admin_account}:{aes_decrypt(device.admin_pwd)}"
+        stream_type=device_company.stream_type
+        steam_path=device_company.stream_path
         # 先进行ping检测
         try:
             # 根据系统类型选择不同的ping参数
@@ -52,7 +59,8 @@ async def rtsp_stream(
             await websocket.close()
             return
         try:    
-            rtsp_url = f"rts://{adminInfo}@{complete_ip}/Streaming/Channels/101"
+            rtsp_url = f"{stream_type}://{adminInfo}@{complete_ip}{steam_path}"
+
             cap = cv2.VideoCapture(rtsp_url)
             
             if not cap.isOpened():
