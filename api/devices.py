@@ -167,3 +167,29 @@ def bind_model_to_device(
     return success_response(msg="模型绑定成功")
 
 
+#获取设备24小时在线情况
+@router.get("/api/getDeviceOnlineInfo")
+def get_device_online_stats(
+    current_userInfo = Depends(decodeToken2user) 
+):
+    if current_userInfo == False:
+        return error_response(code=401, msg="令牌验证失败")
+
+    # 生成24小时的模拟数据
+    import random
+    from datetime import datetime, timedelta
+    
+    now = datetime.now()
+    hours_data = []
+    
+    for i in range(24):
+        hour = (now - timedelta(hours=23 - i)).strftime("%H:00")
+        # 固定总设备数100，随机生成在线设备数(0-100)
+        online_devices = random.randint(0, 100)
+        hours_data.append({
+            "time": hour,
+            "total_devices": 100,
+            "online_devices": online_devices
+        })
+
+    return success_response(data=hours_data, msg="获取设备历史在线信息成功")

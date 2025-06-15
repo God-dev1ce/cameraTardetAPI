@@ -25,7 +25,7 @@ class DeviceCreate(DeviceBase):
     admin_account:str
     admin_pwd:str
     company_id: str
-    pass
+    
 
 class DeviceUpdate(DeviceBase):
-    pass
+    id:str
