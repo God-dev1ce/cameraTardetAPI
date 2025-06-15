@@ -143,7 +143,7 @@ def list_devices_by_node(
     child_nodes = db.query(Node).filter(Node.node_fjm.like(node.node_fjm + "%")).all()
     for child_node in child_nodes:
         node_ids.append(child_node.id)
-    devices = db.query(Device).filter(Device.node_id.in_(node_ids)).offset(skip).limit(limit).all( )
+    devices = db.query(Device).filter(Device.node_id.in_(node_ids)).offset(skip).limit(limit).all()
     if not devices:
         return error_response(code=404, msg="设备列表为空")  
     resData = []
@@ -156,9 +156,9 @@ def list_devices_by_node(
             "ip_address": device.ip_address,
             "port": device.port,
             "node_id": device.node_id,
-            "connected_time": device.connected_time,
-            "disconnected_time": device.disconnected_time,
-            "sync_time": device.sync_time,
+            "connected_time": device.connected_time.isoformat() if device.connected_time else None,
+            "disconnected_time": device.disconnected_time.isoformat() if device.disconnected_time else None,
+            "sync_time": device.sync_time.isoformat() if device.sync_time else None,
             "is_online": device.is_online
         })
     total = db.query(Device).filter(Device.node_id.in_(node_ids)).count()
