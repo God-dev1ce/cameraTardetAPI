@@ -77,7 +77,11 @@ async def rtsp_stream(
             if not ret:
                 continue
                 
-            _, buffer = cv2.imencode(".jpg", frame)
+
+            # 压缩图像质量 (quality参数范围1-100，数值越小压缩率越高)
+            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]  # 设置为70%质量
+            _, buffer = cv2.imencode(".jpg", frame, encode_param)
+            
             img_base64 = base64.b64encode(buffer).decode("utf-8")
             message = f"data:image/jpeg;base64,{img_base64}"
             await websocket.send_text("200|"+message)
