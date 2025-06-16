@@ -7,6 +7,7 @@ from schemas.node import NodeBase, NodeCreate
 from typing import List, Dict, Any, Optional
 from core.security import get_password_hash, decodeToken2user
 from utils.response import success_response, error_response
+from fastapi.encoders import jsonable_encoder
 
 router = APIRouter()
 
@@ -147,21 +148,15 @@ def list_devices_by_node(
     if not devices:
         return error_response(code=404, msg="设备列表为空")  
     resData = []
-    for device in devices:
-        resData.append({
-            "id": str(device.id),
-            "name": device.name,
-            "code": device.code,
-            "director": device.director,
-            "ip_address": device.ip_address,
-            "port": device.port,
-            "node_id": device.node_id,
-            "connected_time": device.connected_time.isoformat() if device.connected_time else None,
-            "disconnected_time": device.disconnected_time.isoformat() if device.disconnected_time else None,
-            "sync_time": device.sync_time.isoformat() if device.sync_time else None,
-            "is_online": device.is_online
-        })
+    resData = [{
+        **jsonable_encoder(device),
+        "connected_time": device.connected_time.isoformat() if device.connected_time else None,
+        "disconnected_time": device.disconnected_time.isoformat() if device.disconnected_time else None,
+        "sync_time": device.sync_time.isoformat() if device.sync_time else None
+    } for device in devices]
     total = db.query(Device).filter(Device.node_id.in_(node_ids)).count()
+
+
     resData = {
         "total": total,
         "devices": resData

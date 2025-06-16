@@ -7,6 +7,7 @@ from db.models import Device, Node,Model,Device_Model_Map
 from schemas.device import DeviceCreate, DeviceUpdate
 from schemas.device_model_map import DeviceModelMap
 from typing import List, Optional
+from fastapi.encoders import jsonable_encoder
 from core.security import  decodeToken2user,aes_encrypt
 from utils.response import success_response, error_response
 
@@ -74,6 +75,36 @@ def delete_device(
 
     return success_response(msg="设备删除成功")
 
+#获取未绑定节点的设备列表
+@router.get("/api/getUnbindedDeviceList")
+def get_unbinded_device_list(
+    db: Session = Depends(get_db),
+    current_userInfo = Depends(decodeToken2user) 
+):
+    if current_userInfo == False:
+        return error_response(code=401, msg="令牌验证失败")
+
+    current_userID, current_userRole = current_userInfo
+    if current_userRole!= "admin":
+        return error_response(code=400, msg="无权限")
+    #查询node_id为空的设备或者node_id=null的设备
+    
+    unbinded_devices = db.query(Device).filter(Device.node_id == None).all()
+    if not unbinded_devices:
+        return error_response(code=404, msg="未查询到未绑定节点的设备")  
+    resData = []
+    resData = [{
+        **jsonable_encoder(device),
+        "connected_time": device.connected_time.isoformat() if device.connected_time else None,
+        "disconnected_time": device.disconnected_time.isoformat() if device.disconnected_time else None,
+        "sync_time": device.sync_time.isoformat() if device.sync_time else None
+    } for device in unbinded_devices]
+    total = db.query(Device).filter(Device.node_id == None).count()
+    resData = {
+        "total": str(total),
+        "devices": resData
+    }
+    return success_response(data=resData, msg="获取未绑定节点的设备列表成功")
 
 #获取设备统计信息
 @router.get("/api/getDevicesStats")
