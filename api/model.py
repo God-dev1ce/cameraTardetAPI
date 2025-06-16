@@ -3,7 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from db.database import SessionLocal    
-from db.models import Model,Model_Rule,Device_Model_Map,Device_Model_Rule_Map
+from db.models import Model,Model_Rule,Device_Model_Map,Device_Model_Rule_Map,Alerts_Type
 from schemas.model import ModelCreate, ModelUpdate
 from schemas.device_model_rule_map import DeviceModelRuleMap
 from core.security import decodeToken2user
@@ -28,11 +28,15 @@ def create_model(model: ModelCreate, db: Session = Depends(get_db), current_user
     existing_model = db.query(Model).filter(Model.name == model.name).first()
     if existing_model:
         return error_response(code=400, msg="模型名称重复")
-    
+    #检查报警类型ID
+    alert_type = db.query(Alerts_Type).filter(Alerts_Type.id == model.alert_type).first()
+    if not alert_type:
+        return error_response(code=400, msg="报警类型不存在")
     # 创建新模型
     new_model = Model(
         id=uuid.uuid4(),
         name=model.name,
+        alert_type=model.alert_type,
         created_time=datetime.now()
     )
     db.add(new_model)
@@ -51,7 +55,13 @@ def update_model(model_in: ModelUpdate, db: Session = Depends(get_db), current_u
     model = db.query(Model).filter(Model.id == model_in.id).first()
     if not model:
         return error_response(code=404, msg="模型不存在")
-    model.name = model_in.name
+    if model_in.alert_type:
+        #检查报警类型ID
+        alert_type = db.query(Alerts_Type).filter(Alerts_Type.id == model_in.alert_type).first()
+        if not alert_type:
+            return error_response(code=400, msg="报警类型不存在")
+    for key, value in model_in.model_dump(exclude_unset=True).items():
+        setattr(model, key, value)
     db.commit()
     db.refresh(model)
     return success_response(msg="更新模型成功")

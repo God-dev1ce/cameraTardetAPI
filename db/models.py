@@ -1,5 +1,5 @@
 # SQLAlchemy模型定义
-from sqlalchemy import Boolean, Column, String, Enum, DateTime
+from sqlalchemy import Boolean, Column, Integer, String, Enum, DateTime
 from db.database import Base
 from datetime import datetime
 
@@ -62,6 +62,7 @@ class Model(Base):
 
     id = Column(String(36), primary_key=True, index=True)   #模型ID
     name = Column(String(20), nullable=False)   #模型名称
+    alert_type = Column(String(36),  nullable=False)   #所属报警类型ID
     created_time = Column(DateTime, default=datetime.now())    #创建时间
     
 # 模型规则表（权重）
@@ -100,10 +101,19 @@ class Alert(Base):
     model_id = Column(String(36),  nullable=False)  #模型ID
     rule_id = Column(String(36),  nullable=False)   #识别规则ID
     image_url = Column(String(255), nullable=True)  #报警图片URL
+    alert_type = Column(String(36),  nullable=False)   #报警类型ID
     alert_msg = Column(String(255), nullable=True)  #报警信息
     alert_time = Column(DateTime, default=datetime.now())    #报警时间
     alert_level = Column(Enum("A", "B", "C", "D"), nullable=True)   #报警级别
     alert_result = Column(Enum("误报", "确认报警"), nullable=True)  #报警结果
-    status = Column(Enum("未确认", "已确认"), default="unhandled")  #处理状态
+    status = Column(Enum("未处理", "已处理"), default="未处理")  #处理状态
     handled_user = Column(String(36),  nullable=True)   #处理用户ID
     handled_time = Column(DateTime, nullable=True)   #处理时间
+    
+#报警类型模型
+class Alerts_Type(Base):
+    __tablename__ = "alerts_type"
+
+    id = Column(String(36), primary_key=True, index=True)   #报警类型ID
+    name = Column(String(20), nullable=False)   #报警类型名称
+    idx = Column(Integer, nullable=False)   #序号
