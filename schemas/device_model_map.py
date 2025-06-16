@@ -1,8 +1,8 @@
+from typing import List
 from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime
 
 class DeviceModelMap(BaseModel):
-    id: Optional[str] = None
-    device_id: Optional[str] = None
-    model_id: Optional[str] = None
+    device_id: str
+    model_id: List[str]  # 改为数组类型
+    class Config:
+        orm_mode = True

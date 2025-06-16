@@ -156,7 +156,7 @@ def update_device(
 #绑定模型
 @router.post("/api/bindModelToDevice")
 def bind_model_to_device(
-    map_in : DeviceModelMap,
+    map_in: DeviceModelMap,
     db: Session = Depends(get_db),
     current_userInfo = Depends(decodeToken2user) 
 ):
@@ -170,9 +170,10 @@ def bind_model_to_device(
     device = db.query(Device).filter(Device.id == map_in.device_id).first()
     if not device:
         return error_response(code=404, msg="设备不存在")
+    
     new_map = None
-    models=map_in.model_id.split(",")
-    for model_id in models:
+    # 直接使用数组形式的model_id
+    for model_id in map_in.model_id:
         model = db.query(Model).filter(Model.id == model_id).first()
         if not model:
             return error_response(code=404, msg=f"模型 {model_id} 不存在")
@@ -181,7 +182,6 @@ def bind_model_to_device(
             Device_Model_Map.device_id == map_in.device_id,
             Device_Model_Map.model_id == model_id
         ).first()
-        #如果已经绑定过，就跳过
         if existing_map:
             continue
         
@@ -191,6 +191,7 @@ def bind_model_to_device(
             model_id=model_id
         )
         db.add(new_map)
+    
     if not new_map:
         return error_response(code=400, msg="没有新的模型绑定")
     db.commit()
