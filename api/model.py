@@ -7,6 +7,7 @@ from db.models import Model,Model_Rule,Device_Model_Map,Device_Model_Rule_Map,Al
 from schemas.model import ModelCreate, ModelUpdate
 from schemas.device_model_rule_map import DeviceModelRuleMap
 from core.security import decodeToken2user
+from fastapi.encoders import jsonable_encoder
 from utils.response import success_response, error_response
 
 router = APIRouter()
@@ -80,6 +81,30 @@ def delete_model(model_id: str, db: Session = Depends(get_db), current_userInfo 
     db.delete(model)
     db.commit() 
     return success_response(msg="删除模型成功")
+
+#获取模型列表
+@router.get("/api/getModelList")
+def get_model_list(db: Session = Depends(get_db), current_userInfo = Depends(decodeToken2user)):
+    if current_userInfo==False:
+        return error_response(code=401, msg="令牌验证失败")
+    current_userID, current_userRole = current_userInfo
+    if current_userRole != "admin":
+        return error_response(code=400, msg="无权限")
+    models = db.query(Model).all()
+    if not models:
+        return error_response(code=404, msg="模型不存在")
+    resData = []
+    for model in models:
+        resData.append({
+            **jsonable_encoder(model),
+        })
+    total = len(resData)
+    resData = {
+        "total": str(total),
+        "models": resData
+    }
+    return success_response(data=resData,msg="查询模型列表成功")
+
 
 #模型绑定识别规则
 @router.post("/api/bindRuleToModel")
