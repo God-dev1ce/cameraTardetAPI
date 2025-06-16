@@ -119,17 +119,16 @@ def bind_model_rule(map_in:DeviceModelRuleMap, db: Session = Depends(get_db), cu
     if not model:
         return error_response(code=404, msg="该设备和模型绑定关系不存在")
     new_map = None
-    rules=map_in.rule_id.split(",")
-    for rule_id in rules:
-        model = db.query(Model_Rule).filter(Model_Rule.id == rule_id).first()
-        if not model:
+    
+    for rule_id in map_in.rule_id:  
+        model_rule = db.query(Model_Rule).filter(Model_Rule.id == rule_id).first()
+        if not model_rule:
             return error_response(code=404, msg=f"规则 {rule_id} 不存在")
         
         existing_rule = db.query(Device_Model_Rule_Map).filter(
             Device_Model_Rule_Map.device_model_id == map_in.device_model_id,
             Device_Model_Rule_Map.rule_id == rule_id
         ).first()
-        #如果已经绑定过，就跳过
         if existing_rule:
             continue
         
@@ -139,6 +138,7 @@ def bind_model_rule(map_in:DeviceModelRuleMap, db: Session = Depends(get_db), cu
             rule_id=rule_id
         )
         db.add(new_map)
+    
     if not new_map:
         return error_response(code=400, msg="都已绑定，没有新的识别规则绑定")
     db.commit()
