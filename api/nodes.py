@@ -120,6 +120,8 @@ def delete_node(node_id: str, db: Session = Depends(get_db),current_userInfo = D
     child_nodes = db.query(Node).filter(Node.node_fjm.like(node.node_fjm + "%")).all()
     for child_node in child_nodes:
         db.delete(child_node)
+        #清除设备的节点绑定
+        db.query(Device).filter(Device.node_id == child_node.id).update({Device.node_id: None})
     db.delete(node)
     db.commit()
     return success_response(msg="节点删除成功")
