@@ -83,26 +83,26 @@ def get_alert_list(
     # 构建基础查询
     query = db.query(Alert)
     
-    # 如果有传入参数才添加过滤条件
-    if any(value is not None for value in alert_in.dict().values()):
-        filters = {
-            'device_id': Alert.device_id,
-            'model_id': Alert.model_id,
-            'rule_id': Alert.rule_id,
-            'alert_type': Alert.alert_type,
-            'status': Alert.status
-        }
-        
-        for field, column in filters.items():
-            value = getattr(alert_in, field, None)
-            if value is not None:
-                query = query.filter(column == value)
-        
-        # 时间范围查询
-        if alert_in.start_time:
-            query = query.filter(Alert.alert_time >= alert_in.start_time)
-        if alert_in.end_time:
-            query = query.filter(Alert.alert_time <= alert_in.end_time)
+    # 设备/模型/规则等条件过滤
+    filters = {
+        'device_id': Alert.device_id,
+        'model_id': Alert.model_id, 
+        'rule_id': Alert.rule_id,
+        'alert_type': Alert.alert_type,
+        'alert_result': Alert.alert_result,
+        'status': Alert.status
+    }
+    
+    for field, column in filters.items():
+        value = getattr(alert_in, field, None)
+        if value is not None:
+            query = query.filter(column == value)
+    
+    # 时间范围查询
+    if alert_in.start_time:
+        query = query.filter(Alert.alert_time >= alert_in.start_time)
+    if alert_in.end_time:
+        query = query.filter(Alert.alert_time <= alert_in.end_time)
     
     # 排序和获取结果
     alerts = query.order_by(Alert.alert_time.desc()).all()
