@@ -145,8 +145,7 @@ def update_device(
     if not device:
         return error_response(code=404, msg="设备不存在")
 
-    # 使用 model_dump() 替代 dict()
-    for key, value in device_in.model_dump(exclude_unset=True).items():
+    for key, value in device_in.model_dump(exclude_unset=True,exclude=['id','ip_address','port','admin_account','admin_pwd']).items():
         setattr(device, key, value)
 
     db.commit()

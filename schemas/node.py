@@ -2,12 +2,14 @@ from pydantic import BaseModel
 from typing import Optional
 
 class NodeBase(BaseModel):
-    node_name: str
-    parent_id: str
-    node_js: str
-    node_fjm: str
-    node_mx: str
+    id: Optional[str] = None
+    node_name: Optional[str] = None
+    parent_id: Optional[str] = None
+    node_js: Optional[str] = None
+    node_fjm: Optional[str] = None
+    node_mx: Optional[str] = None
 class NodeCreate(BaseModel):
     node_name: str
     parent_id: str
-
+class NodeUpdate(BaseModel):
+    id: str

@@ -92,23 +92,14 @@ def update_user(user_in: UserUpdate, db: Session = Depends(get_db),current_userI
     user = db.query(User).filter(User.usercode == user_in.usercode).first()
     if not user:
         return error_response(code=400, msg="用户不存在")
-
-    if user_in.username:
-        user.username = user_in.username
+    for key, value in user_in.model_dump(exclude_unset=True,exclude=['id']).items():
+        setattr(user, key, value)
     if user_in.password:
         user.password = get_password_hash(user_in.password)
-    if user_in.role:
-        user.role = user_in.role
 
     db.commit()
     db.refresh(user)
-    # user_out = jsonable_encoder(user)
-    user_out = {
-        "usercode": user.usercode,
-        "username": user.username,
-        "role": user.role
-    }
-    return success_response(data=user_out, msg="用户更新成功")
+    return success_response(msg="用户更新成功")
 
 # 删除用户
 @router.delete("/api/delUsers/{usercode}")

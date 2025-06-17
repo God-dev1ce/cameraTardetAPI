@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.database import SessionLocal
 from db.models import Node, Device
-from schemas.node import NodeBase, NodeCreate
+from schemas.node import NodeBase, NodeCreate,NodeUpdate
 from typing import List, Dict, Any, Optional
 from core.security import get_password_hash, decodeToken2user
 from utils.response import success_response, error_response
@@ -59,7 +59,22 @@ def create_node(node_in: NodeCreate, db: Session = Depends(get_db),current_userI
     db.refresh(parent_node)
     
     return success_response(msg="节点创建成功")
-
+#修改节点信息
+@router.post("/api/updateNode")
+def update_node(node_in: NodeUpdate, db: Session = Depends(get_db),current_userInfo = Depends(decodeToken2user)):
+    if current_userInfo==False:
+        return error_response(code=401, msg="令牌验证失败")
+    current_userID,current_userRole= current_userInfo  
+    if current_userRole != "admin":
+        return error_response(code=400, msg="无权限")
+    node = db.query(Node).filter(Node.id == node_in.id).first()
+    if not node:
+        return error_response(code=400, msg="节点不存在")
+    for key, value in node_in.model_dump(exclude_unset=True,exclude=['id','parent_id','node_js','node_fjm','node_mx']).items():
+        setattr(node, key, value)
+    db.commit()
+    db.refresh(node)
+    return success_response(msg="节点更新成功")
 #获取节点列表
 @router.get("/api/getNodesList")
 def list_nodes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db),checkToken = Depends(decodeToken2user)):

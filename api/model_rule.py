@@ -54,8 +54,8 @@ def update_model(rule_in: RuleUpdate, db: Session = Depends(get_db),current_user
     model_rule = db.query(Model_Rule).filter(Model_Rule.id == rule_in.id).first()
     if model_rule:
         return error_response(code=404, msg="识别规则不存在")
-    model_rule.name=rule_in.name
-    model_rule.notes=rule_in.notes
+    for key, value in rule_in.model_dump(exclude_unset=True,exclude=['id','path']).items():
+        setattr(model_rule, key, value)
     db.commit()
     db.refresh(model_rule)
     return success_response(msg="更新识别规则成功")

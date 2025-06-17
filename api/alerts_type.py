@@ -64,8 +64,9 @@ def update_alert_type(alert_type: AlertTypeUpdate, db: Session = Depends(get_db)
     db_alert_type = db.query(Alerts_Type).filter(Alerts_Type.id == alert_type.id).first()
     if not db_alert_type:
         return error_response(code=404, msg="报警类型不存在")
-    db_alert_type.name = alert_type.name
-    db_alert_type.idx = alert_type.idx
+    
+    for key, value in alert_type.model_dump(exclude_unset=True,exclude=['id']).items():
+        setattr(db_alert_type, key, value)
     #判断是否有重复idx
     if db.query(Alerts_Type).filter(Alerts_Type.idx == alert_type.idx).first():
         return error_response(code=400, msg="报警类型idx序号重复")

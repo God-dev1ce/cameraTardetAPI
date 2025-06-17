@@ -14,5 +14,3 @@ class AlertTypeCreate(BaseModel):
 
 class AlertTypeUpdate(BaseModel):
     id: str
-    name: Optional[str] = None
-    idx: Optional[int] = None

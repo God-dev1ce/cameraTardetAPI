@@ -61,7 +61,7 @@ def update_model(model_in: ModelUpdate, db: Session = Depends(get_db), current_u
         alert_type = db.query(Alerts_Type).filter(Alerts_Type.id == model_in.alert_type).first()
         if not alert_type:
             return error_response(code=400, msg="报警类型不存在")
-    for key, value in model_in.model_dump(exclude_unset=True).items():
+    for key, value in model_in.model_dump(exclude_unset=True,exclude=['id']).items():
         setattr(model, key, value)
     db.commit()
     db.refresh(model)
