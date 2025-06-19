@@ -3,7 +3,7 @@ import cv2
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from db.database import SessionLocal
-from db.models import Device, Node,Model,Device_Model_Map
+from db.models import Device, Node,Model,Model_Rule,Device_Model_Map,Device_Model_Rule_Map
 from schemas.device import DeviceCreate, DeviceUpdate
 from schemas.device_model_map import DeviceModelMap
 from typing import List, Optional
@@ -197,6 +197,40 @@ def bind_model_to_device(
     db.refresh(new_map)
     return success_response(msg="模型绑定成功")
 
+#获取设备下设置的模型和规则
+@router.get("/api/getDeviceBindInfo/{device_id}")
+def get_device_bind_info(
+    device_id: str,
+    db: Session = Depends(get_db),
+    current_userInfo = Depends(decodeToken2user) 
+):
+    if current_userInfo == False:
+        return error_response(code=401, msg="令牌验证失败")
+
+    # 查询设备绑定的所有模型
+    device_models = db.query(Device_Model_Map).filter(Device_Model_Map.device_id == device_id).all()
+    if not device_models:
+        return error_response(code=404, msg="设备未绑定任何模型")
+    resData = []
+    
+    for device_model in device_models:
+        resData.append({
+            "model_id": device_model.model_id,
+            "model_name": db.query(Model).filter(Model.id == device_model.model_id).first().name,
+            "rules": []
+        })
+        #查询该设备绑定的模型下绑定的所有规则
+        device_model_rules = db.query(Device_Model_Rule_Map).filter(Device_Model_Rule_Map.device_model_id == device_model.id).all()
+        for device_model_rule in device_model_rules:
+            resData[-1]["rules"].append({
+                "rule_id": device_model_rule.rule_id,
+                "rule_name": db.query(Model_Rule).filter(Model_Rule.id == device_model_rule.rule_id).first().name,
+            })
+    #返回数据
+    return success_response(data=resData, msg="获取设备绑定信息成功")
+        
+        
+    
 
 #获取设备24小时在线情况
 @router.get("/api/getDeviceOnlineInfo")
